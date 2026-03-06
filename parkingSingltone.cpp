@@ -1,34 +1,41 @@
 #include <iostream>
+#include <mutex>
 
-class ParkingSingltone{
+class ParkingSingltone {
 private:
     static ParkingSingltone* instance;
-    int parkedCars;
-    
+    static std::mutex mtx;
 
-    ParkingSingltone() : parkedCars(0){}
-    
+    int parkedCars;
+
+    ParkingSingltone() : parkedCars(0) {}
+
 public:
-    static ParkingSingltone& getInstance(){
-        if(instance==nullptr){
-            instance=new ParkingSingltone();
+    static ParkingSingltone& getInstance() {
+        std::lock_guard<std::mutex> lock(mtx);
+
+        if (instance == nullptr) {
+            instance = new ParkingSingltone();
         }
+
         return *instance;
     }
-    
-    void park(){
+
+    void park() {
+        std::lock_guard<std::mutex> lock(mtx);
         parkedCars++;
     }
-    
-    int getCount(){
+
+    int getCount() {
+        std::lock_guard<std::mutex> lock(mtx);
         return parkedCars;
     }
-    
 };
-ParkingSingltone* ParkingSingltone::instance=nullptr;
 
+ParkingSingltone* ParkingSingltone::instance = nullptr;
+std::mutex ParkingSingltone::mtx;
 
-int main(int argc,const char* argv[]){
+int main() {
 
     ParkingSingltone& p1 = ParkingSingltone::getInstance();
     ParkingSingltone& p2 = ParkingSingltone::getInstance();
@@ -36,7 +43,7 @@ int main(int argc,const char* argv[]){
     p1.park();
     p2.park();
 
-    std::cout << p1.getCount(); 
-    
+    std::cout << p1.getCount()<<std::endl;
+
     return 0;
 }
